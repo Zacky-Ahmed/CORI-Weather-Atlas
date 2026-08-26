@@ -15,7 +15,9 @@ const demoCities = [
 
 export async function loadCityCodes() {
   const raw = JSON.parse(await readFile(new URL('../../cities.json', import.meta.url)));
-  return raw.CityList.map((city) => city.CityCode);
+  const cities = raw.List ?? raw.CityList;
+  if (!Array.isArray(cities)) throw new Error('cities.json must contain a List array of city objects.');
+  return cities.map((city) => city.CityCode);
 }
 
 async function getRawWeather(cityId) {

@@ -10,7 +10,7 @@ A server-driven weather analytics dashboard built with Express, EJS and HTMX. It
 4. Run `npm install`, then `npm run dev`.
 5. Visit `http://localhost:3000`.
 
-The supplied source file contained eight cities. This project extends it to ten with London and Singapore so it meets the assignment's minimum; the legacy `Temp` and `Status` fields are intentionally ignored because the live OpenWeatherMap response is authoritative.
+The supplied source file contained eight cities. This project extends it to ten with London and Singapore so it meets the assignment's minimum; the legacy `Temp` and `Status` fields are intentionally ignored because the live OpenWeatherMap response is authoritative. The parser accepts the supplied `List` key and the earlier `CityList` variant.
 
 ## Comfort Index
 
