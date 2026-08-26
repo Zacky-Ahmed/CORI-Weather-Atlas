@@ -1,0 +1,28 @@
+<section class="hero-grid">
+  <div class="hero-copy">
+    <p class="eyebrow">CITY OUTDOOR READINESS · CURRENT CONDITIONS</p>
+    <h1>Where should<br>the day <em>happen?</em></h1>
+    <p class="subtitle">An atmospheric field guide for choosing the city that feels best outdoors—right now.</p>
+    <div class="hero-actions">
+      <button class="refresh" hx-get="/dashboard/rankings" hx-target="#rankings" hx-swap="innerHTML" hx-indicator="#loading"><span>Recalculate field notes</span> <b>↻</b></button>
+      <span id="loading" class="htmx-indicator refresh-status">Reading weather stations…</span>
+    </div>
+  </div>
+  <aside class="signal-card">
+    <div class="signal-top"><span>THE CORI LENS</span><span class="pulse">●</span></div>
+    <div class="signal-number">3</div>
+    <p>Signals in dialogue</p>
+    <div class="signal-lines"><span>THERMAL STRAIN</span><span>AIR CLARITY</span><span>WEATHER FRICTION</span></div>
+  </aside>
+</section>
+<section class="insight-strip" aria-label="Comfort Index explanation">
+  <span>01 <b>Feel</b> · heat, moisture & wind</span><span>02 <b>See</b> · visibility</span><span>03 <b>Go</b> · weather disruption</span>
+</section>
+<section id="rankings" class="ranking-panel" hx-get="/dashboard/rankings" hx-trigger="load" hx-swap="innerHTML">
+  <div class="loading-skeleton"><i></i><i></i><i></i></div>
+</section>
+<section class="method-grid">
+  <div><p class="eyebrow">NOT A WEATHER WIDGET</p><h2>Comfort has context.</h2></div>
+  <p>CORI is computed on the server from the interaction between temperature, humidity, wind, visibility, and weather conditions. A severe disruption cannot be disguised by a pleasant temperature.</p>
+  <a href="/api/cache-status" target="_blank">Inspect cache telemetry ↗</a>
+</section>

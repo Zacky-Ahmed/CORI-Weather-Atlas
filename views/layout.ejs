@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= title %></title>
+    <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+    <link rel="stylesheet" href="/css/app.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/"><span class="brand-mark">◐</span><span>Atmosphere<br><small>Observatory</small></span></a>
+      <div class="topbar-status"><span class="live-dot"></span> LIVE ANALYSIS</div>
+      <% if (user) { %><span class="user"><%= user.name || user.email %> · <a href="/logout">Log out</a></span><% } %>
+    </header>
+    <main><%- body %></main>
+  </body>
+</html>
