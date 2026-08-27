@@ -7,3 +7,7 @@ export function isAllowedEmail(email, allowedEmails) {
 export function getAllowedEmails(value) {
   return (value ?? '').split(',').map((email) => email.trim()).filter(Boolean);
 }
+
+export function isVerifiedAllowedUser(user, allowedEmails) {
+  return Boolean(user?.email_verified) && isAllowedEmail(user.email, allowedEmails);
+}

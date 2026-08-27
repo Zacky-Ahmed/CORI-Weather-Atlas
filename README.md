@@ -155,7 +155,7 @@ Record screenshots of the enabled connection, Post Login Action binding, and MFA
 ### Responsibility split
 
 - **Auth0 owns identity proof:** password handling, verification email, MFA challenge, session creation, and the tenant-side Post Login allowlist.
-- **This application owns resource authorization:** every dashboard, ranking-fragment, and cache-debug request repeats the approved-email check. This defence-in-depth check protects the application even if the tenant Action is changed later.
+- **This application owns resource authorization:** every dashboard, ranking-fragment, and cache-debug request requires both an approved email and Auth0's `email_verified` claim. This defence-in-depth check protects the application even if the tenant Action is changed later.
 - **The repository owns reproducibility:** the Action source and `.env.example` are versioned; real values only exist in Auth0 and the ignored local `.env` file.
 
 ## Trade-offs and limitations

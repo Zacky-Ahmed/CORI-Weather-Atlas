@@ -33,12 +33,14 @@ test('a thunderstorm receives a safety cap even with ideal temperature', () => {
   const result = calculateComfortIndex({ ...settledWalk, conditionCode: 200 });
   assert.equal(result.score, 35);
   assert.deepEqual(result.safetyCap, { value: 35, reason: 'thunderstorm' });
+  assert.match(result.explanation, /safety cap/);
 });
 
 test('very low visibility receives a safety cap', () => {
   const result = calculateComfortIndex({ ...settledWalk, visibility: 500, conditionCode: 741 });
   assert.equal(result.score, 45);
   assert.deepEqual(result.safetyCap, { value: 45, reason: 'very low visibility' });
+  assert.match(result.explanation, /safety cap/);
 });
 
 test('CORI always remains between 0 and 100', () => {

@@ -23,17 +23,22 @@ function conditionScore(conditionCode) {
   return { score: 1, label: 'settled conditions' };
 }
 
-function buildExplanation({ humidityHeatPenalty, coldWindPenalty, hotBreezeRelief, visibility, condition }) {
+function buildExplanation({ humidityHeatPenalty, coldWindPenalty, hotBreezeRelief, visibility, condition, safetyCap }) {
   const factors = [];
+  if (safetyCap?.reason === 'thunderstorm') factors.push('active thunderstorms impose a safety cap');
+  else if (safetyCap?.reason === 'very low visibility') factors.push('very low visibility imposes a safety cap');
+  else if (safetyCap?.reason === 'high thermal strain') factors.push('high thermal strain imposes a safety cap');
+  else if (safetyCap?.reason === 'cold exposure') factors.push('cold exposure imposes a safety cap');
+
   if (humidityHeatPenalty >= 2) factors.push('humid air is amplifying the heat');
   else if (hotBreezeRelief >= 1) factors.push('a breeze is easing the warmth');
   else if (coldWindPenalty >= 2) factors.push('wind is intensifying the cold');
   else factors.push('thermal conditions are relatively balanced');
 
-  if (visibility < 3000) factors.push('low visibility limits outdoor usability');
+  if (!safetyCap && visibility < 3000) factors.push('low visibility limits outdoor usability');
   else if (visibility >= 8000) factors.push('clear visibility supports outdoor plans');
 
-  if (condition.label === 'thunderstorm') factors.push('active thunderstorms impose a safety cap');
+  if (!safetyCap && condition.label === 'thunderstorm') factors.push('active thunderstorms impose a safety cap');
   else if (!['settled conditions', 'cloud cover'].includes(condition.label)) factors.push(`${condition.label} adds weather friction`);
 
   return factors.slice(0, 2).join(' · ');
@@ -87,6 +92,6 @@ export function calculateComfortIndex({ temperatureC, humidity, windSpeed, visib
     clarityScore: Number((clarityScore * 100).toFixed(1)),
     conditionScore: Number((condition.score * 100).toFixed(1)),
     safetyCap: activeCap ?? null,
-    explanation: buildExplanation({ humidityHeatPenalty, coldWindPenalty, hotBreezeRelief, visibility: safeVisibility, condition })
+    explanation: buildExplanation({ humidityHeatPenalty, coldWindPenalty, hotBreezeRelief, visibility: safeVisibility, condition, safetyCap: activeCap })
   };
 }

@@ -5,7 +5,7 @@ import { auth } from 'express-openid-connect';
 import { fileURLToPath } from 'node:url';
 import { getRankings } from './services/weather.js';
 import { cacheStatus } from './services/cache.js';
-import { getAllowedEmails, isAllowedEmail } from './utils/access-control.js';
+import { getAllowedEmails, isAllowedEmail, isVerifiedAllowedUser } from './utils/access-control.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,7 +39,14 @@ if (authEnabled) {
 function requireUser(req, res, next) {
   if (!authEnabled) return next();
   if (!req.oidc?.isAuthenticated()) return res.oidc.login({ returnTo: '/' });
-  if (isAllowedEmail(req.oidc.user?.email, allowedEmails)) return next();
+  if (isVerifiedAllowedUser(req.oidc.user, allowedEmails)) return next();
+  if (isAllowedEmail(req.oidc.user?.email, allowedEmails)) {
+    return res.status(403).render('error', {
+      title: 'Email verification required',
+      message: 'Verify your approved email address before accessing this dashboard.',
+      user: req.oidc.user
+    });
+  }
   return res.status(403).render('error', {
     title: 'Access restricted',
     message: 'Your account is authenticated but not approved for this dashboard.',
