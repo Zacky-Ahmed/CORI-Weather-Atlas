@@ -50,7 +50,7 @@ function requireUser(req, res, next) {
 app.get('/', requireUser, (req, res) => res.render('dashboard', { title: 'Weather Comfort Atlas', user: req.oidc?.user }));
 app.get('/dashboard/rankings', requireUser, async (req, res, next) => {
   try {
-    res.app.render('partials/rankings', { rankings: await getRankings() }, (error, html) => {
+    res.app.render('partials/rankings', await getRankings(), (error, html) => {
       if (error) return next(error);
       return res.send(html);
     });

@@ -86,7 +86,7 @@ CORI is an explainable outdoor-readiness metric, not a medical heat-stress index
 
 ## Cache design
 
-Raw OpenWeatherMap responses are cached in memory for 300 seconds with `node-cache`. The cache is keyed by city ID, so one unavailable city does not invalidate the rest. `GET /api/cache-status` reports cache keys and the most recent `HIT` or `MISS` for each key.
+Raw OpenWeatherMap responses are cached in memory for 300 seconds with `node-cache`. The cache is keyed by city ID, so one unavailable city does not invalidate the rest. Weather requests are settled independently: a timeout or bad response for one city leaves the available cities ranked and shows an honest in-page notice. Only if every request fails does the dashboard return a retryable error. `GET /api/cache-status` reports cache keys and the most recent `HIT` or `MISS` for each key.
 
 The processed ranking is recalculated from cached raw data. This avoids stale derived data while keeping API calls low. For a multi-instance production deployment, Redis would replace the in-memory cache.
 
@@ -132,4 +132,4 @@ Record screenshots of the enabled connection, Post Login Action binding, and MFA
 
 ## Tests
 
-Run `npm test` to test the CORI ideal case, dew-point interaction, hot/cold wind behavior, safety caps, and score bounds.
+Run `npm test` to test the CORI ideal case, dew-point interaction, hot/cold wind behavior, safety caps, score bounds, and isolated per-city API failures.

@@ -1,4 +1,7 @@
 <div class="rankings-heading"><div><p class="eyebrow">THE FIELD RANKING</p><h2>Comfort, in order.</h2></div><div class="update-note"><span class="live-dot"></span><%= rankings[0]?.demo ? 'DEMO ATMOSPHERE' : 'LIVE WEATHER DATA' %><small>Refreshes through a 5-minute server cache</small></div></div>
+<% if (typeof unavailableCityIds !== 'undefined' && unavailableCityIds.length) { %>
+  <p class="data-note" role="status"><%= unavailableCityIds.length %> city report<%= unavailableCityIds.length === 1 ? '' : 's' %> could not be refreshed. The ranking below uses the available live data.</p>
+<% } %>
 <div class="cards">
   <% rankings.forEach((city) => { %>
     <article class="city-card <%= city.rank === 1 ? 'leader' : '' %>" style="--score:<%= city.comfortScore %>">

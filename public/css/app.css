@@ -13,4 +13,5 @@ main { margin:auto; max-width:1200px; padding:clamp(2.7rem,7vw,6rem) max(4vw,1.3
 
 /* CORI exposes its reasoning rather than hiding a score behind a number. */
 .reason { color:#5a685e; font-size:.67rem; grid-column:2 / 4; line-height:1.35; margin:-.5rem 0 0; text-transform:none; }.reason span { color:#758174; font-family:'DM Mono',monospace; font-size:.49rem; letter-spacing:.1em; margin-right:.55rem; }
+.data-note { background:#fff1d8; border:1px solid #e7c783; color:#6c4a12; font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.015em; margin:0 0 1rem; padding:.7rem .8rem; }
 @media (max-width:760px) { .reason { grid-column:2 / -1; margin:0; } }

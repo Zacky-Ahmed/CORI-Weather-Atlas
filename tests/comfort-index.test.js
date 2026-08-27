@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateComfortIndex, calculateDewPoint } from '../src/utils/comfort-index.js';
+import { getRankingsForCities } from '../src/services/weather.js';
 
 const settledWalk = { temperatureC: 22, humidity: 50, windSpeed: 2, visibility: 10000, conditionCode: 800 };
 
@@ -43,4 +44,26 @@ test('very low visibility receives a safety cap', () => {
 test('CORI always remains between 0 and 100', () => {
   const result = calculateComfortIndex({ temperatureC: -50, humidity: 200, windSpeed: 80, visibility: -1, conditionCode: 200 });
   assert.ok(result.score >= 0 && result.score <= 100);
+});
+
+test('a failed city request does not prevent the available cities from ranking', async () => {
+  const reports = {
+    one: { name: 'One', main: { temp: 22, humidity: 50 }, wind: { speed: 2 }, visibility: 10000, weather: [{ id: 800, description: 'clear sky' }] },
+    three: { name: 'Three', main: { temp: 12, humidity: 80 }, wind: { speed: 5 }, visibility: 5000, weather: [{ id: 500, description: 'rain' }] }
+  };
+  const result = await getRankingsForCities(['one', 'two', 'three'], async (cityId) => {
+    if (cityId === 'two') throw new Error('upstream timeout');
+    return reports[cityId];
+  });
+  assert.deepEqual(result.unavailableCityIds, ['two']);
+  assert.equal(result.rankings.length, 2);
+  assert.deepEqual(result.rankings.map((city) => city.rank), [1, 2]);
+  assert.equal(result.rankings[0].city, 'One');
+});
+
+test('all unavailable city reports return a clear retryable error', async () => {
+  await assert.rejects(
+    getRankingsForCities(['one'], async () => { throw new Error('upstream timeout'); }),
+    /temporarily unavailable for every configured city/
+  );
 });

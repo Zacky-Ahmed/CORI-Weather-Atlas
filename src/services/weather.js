@@ -55,15 +55,45 @@ function toInsight(data) {
 export async function getRankings() {
   if (!process.env.OPENWEATHER_API_KEY || process.env.OPENWEATHER_API_KEY === 'replace_with_your_key') {
     if (process.env.DEMO_MODE !== 'false') {
-      return demoCities.map(([city, description, temperatureC, humidity, windSpeed, visibility]) => {
+      const rankings = demoCities.map(([city, description, temperatureC, humidity, windSpeed, visibility]) => {
         const cori = calculateComfortIndex({ temperatureC, humidity, windSpeed, visibility });
         return { city, description, temperatureC, humidity, windSpeed, visibility, comfortScore: cori.score, cori };
       })
         .sort((a, b) => b.comfortScore - a.comfortScore).map((city, index) => ({ ...city, rank: index + 1, demo: true }));
+      return { rankings, unavailableCityIds: [] };
     }
     throw new Error('OPENWEATHER_API_KEY is not configured. Copy .env.example to .env and add your key.');
   }
   const cityCodes = await loadCityCodes();
-  const results = await Promise.all(cityCodes.map(getRawWeather));
-  return results.map(toInsight).sort((a, b) => b.comfortScore - a.comfortScore).map((city, index) => ({ ...city, rank: index + 1 }));
+  return getRankingsForCities(cityCodes, getRawWeather);
+}
+
+/**
+ * Fetches each city independently. A timeout, bad response, or temporary outage
+ * from one station should not turn the entire field ranking into a 500 error.
+ */
+export async function getRankingsForCities(cityIds, weatherLoader) {
+  const settled = await Promise.allSettled(
+    cityIds.map((cityId) => weatherLoader(cityId).then(toInsight))
+  );
+  const unavailableCityIds = [];
+  const insights = [];
+
+  settled.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      insights.push(result.value);
+    } else {
+      unavailableCityIds.push(cityIds[index]);
+      console.warn(`Weather request unavailable for city ${cityIds[index]}; continuing with remaining cities.`);
+    }
+  });
+
+  if (!insights.length) {
+    throw new Error('Weather data is temporarily unavailable for every configured city. Please try again shortly.');
+  }
+
+  const rankings = insights
+    .sort((a, b) => b.comfortScore - a.comfortScore)
+    .map((city, index) => ({ ...city, rank: index + 1 }));
+  return { rankings, unavailableCityIds };
 }
