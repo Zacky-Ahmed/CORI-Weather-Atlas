@@ -32,6 +32,13 @@ function toInsight(data) {
   const humidity = data.main.humidity;
   const windSpeed = data.wind?.speed ?? 0;
   const visibility = data.visibility ?? 0;
+  const cori = calculateComfortIndex({
+    temperatureC,
+    humidity,
+    windSpeed,
+    visibility,
+    conditionCode: data.weather?.[0]?.id
+  });
   return {
     city: data.name,
     description: data.weather?.[0]?.description ?? 'Unknown',
@@ -40,14 +47,18 @@ function toInsight(data) {
     humidity,
     windSpeed,
     visibility,
-    comfortScore: calculateComfortIndex({ temperatureC, humidity, windSpeed, visibility })
+    comfortScore: cori.score,
+    cori
   };
 }
 
 export async function getRankings() {
   if (!process.env.OPENWEATHER_API_KEY || process.env.OPENWEATHER_API_KEY === 'replace_with_your_key') {
     if (process.env.DEMO_MODE !== 'false') {
-      return demoCities.map(([city, description, temperatureC, humidity, windSpeed, visibility]) => ({ city, description, temperatureC, humidity, windSpeed, visibility, comfortScore: calculateComfortIndex({ temperatureC, humidity, windSpeed, visibility }) }))
+      return demoCities.map(([city, description, temperatureC, humidity, windSpeed, visibility]) => {
+        const cori = calculateComfortIndex({ temperatureC, humidity, windSpeed, visibility });
+        return { city, description, temperatureC, humidity, windSpeed, visibility, comfortScore: cori.score, cori };
+      })
         .sort((a, b) => b.comfortScore - a.comfortScore).map((city, index) => ({ ...city, rank: index + 1, demo: true }));
     }
     throw new Error('OPENWEATHER_API_KEY is not configured. Copy .env.example to .env and add your key.');

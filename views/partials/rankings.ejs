@@ -5,6 +5,7 @@
       <div class="rank"><span>RANK</span><b><%= String(city.rank).padStart(2, '0') %></b></div>
       <div class="city-main"><div class="weather-glyph"><%= city.rank === 1 ? '✦' : city.description.includes('rain') ? '◌' : city.description.includes('mist') || city.description.includes('haze') ? '≈' : '○' %></div><div><h3><%= city.city %></h3><p><%= city.description %></p></div></div>
       <div class="details"><span><b><%= Math.round(city.temperatureC) %>°</b> temperature</span><span><b><%= city.humidity %>%</b> moisture</span><span><b><%= city.windSpeed.toFixed(1) %></b> m/s wind</span></div>
+      <p class="reason"><span>WHY THIS RANK</span><%= city.cori.explanation %></p>
       <div class="metric"><div class="score-orb"><strong><%= city.comfortScore %></strong></div><span>CORI SCORE</span></div>
     </article>
   <% }) %>
