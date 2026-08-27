@@ -133,3 +133,8 @@ Record screenshots of the enabled connection, Post Login Action binding, and MFA
 ## Tests
 
 Run `npm test` to test the CORI ideal case, dew-point interaction, hot/cold wind behavior, safety caps, score bounds, and isolated per-city API failures.
+
+## Polished exploration bonuses
+
+- **Field Console:** The ranking panel includes client-side lenses for City Stroll (CORI 70+), Dry Air (humidity at or below 60%), and Clear Horizon (visibility at least 8 km), plus view-only sorting by CORI, temperature, visibility, or calm wind. These controls operate on the already-rendered live response and label non-default ordering as **View Order**, so they never silently alter the required CORI ranking or its server-side formula.
+- **After-hours Observatory:** The top-bar mode switch changes the interface to a low-light palette and remembers the choice locally for the next visit. It is deliberately a presentation preference, not a second data model.

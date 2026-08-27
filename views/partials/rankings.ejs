@@ -2,10 +2,30 @@
 <% if (typeof unavailableCityIds !== 'undefined' && unavailableCityIds.length) { %>
   <p class="data-note" role="status"><%= unavailableCityIds.length %> city report<%= unavailableCityIds.length === 1 ? '' : 's' %> could not be refreshed. The ranking below uses the available live data.</p>
 <% } %>
-<div class="cards">
+<div class="field-console" data-field-console>
+  <div><p class="eyebrow">FIELD CONSOLE</p><p>Explore the same live field notes without changing the CORI model.</p></div>
+  <div class="console-tools">
+    <div class="lens-row" role="group" aria-label="Filter city field notes">
+      <button type="button" class="lens active" data-filter="all">All field notes</button>
+      <button type="button" class="lens" data-filter="stroll">City stroll</button>
+      <button type="button" class="lens" data-filter="dry">Dry air</button>
+      <button type="button" class="lens" data-filter="clear">Clear horizon</button>
+    </div>
+    <label class="sort-control">VIEW BY
+      <select data-sort aria-label="Sort visible cities">
+        <option value="score">CORI score</option>
+        <option value="temperature">Warmest</option>
+        <option value="visibility">Clearest</option>
+        <option value="wind">Calmest wind</option>
+      </select>
+    </label>
+  </div>
+</div>
+<p class="console-status" data-console-status aria-live="polite"></p>
+<div class="cards" data-cards>
   <% rankings.forEach((city) => { %>
-    <article class="city-card <%= city.rank === 1 ? 'leader' : '' %>" style="--score:<%= city.comfortScore %>">
-      <div class="rank"><span>RANK</span><b><%= String(city.rank).padStart(2, '0') %></b></div>
+    <article class="city-card <%= city.rank === 1 ? 'leader' : '' %>" style="--score:<%= city.comfortScore %>" data-rank="<%= city.rank %>" data-score="<%= city.comfortScore %>" data-temperature="<%= city.temperatureC %>" data-visibility="<%= city.visibility %>" data-wind="<%= city.windSpeed %>" data-humidity="<%= city.humidity %>">
+      <div class="rank"><span>CORI RANK</span><b><%= String(city.rank).padStart(2, '0') %></b></div>
       <div class="city-main"><div class="weather-glyph"><%= city.rank === 1 ? '✦' : city.description.includes('rain') ? '◌' : city.description.includes('mist') || city.description.includes('haze') ? '≈' : '○' %></div><div><h3><%= city.city %></h3><p><%= city.description %></p></div></div>
       <div class="details"><span><b><%= Math.round(city.temperatureC) %>°</b> temperature</span><span><b><%= city.humidity %>%</b> moisture</span><span><b><%= city.windSpeed.toFixed(1) %></b> m/s wind</span></div>
       <p class="reason"><span>WHY THIS RANK</span><%= city.cori.explanation %></p>

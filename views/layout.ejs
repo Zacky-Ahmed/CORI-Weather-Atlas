@@ -4,14 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><%= title %></title>
+    <script>try { if (localStorage.getItem('atlas-theme') === 'night') document.documentElement.dataset.theme = 'night'; } catch (_) {}</script>
     <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+    <script src="/js/observatory-controls.js" defer></script>
     <link rel="stylesheet" href="/css/app.css">
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="/"><span class="brand-mark">◐</span><span>Atmosphere<br><small>Observatory</small></span></a>
       <div class="topbar-status"><span class="live-dot"></span> LIVE ANALYSIS</div>
-      <% if (user) { %><span class="user"><%= user.name || user.email %> · <a href="/logout">Log out</a></span><% } %>
+      <div class="topbar-actions">
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to after-hours observatory mode"><span aria-hidden="true">◑</span> After hours</button>
+        <% if (user) { %><span class="user"><%= user.name || user.email %> · <a href="/logout">Log out</a></span><% } %>
+      </div>
     </header>
     <main><%- body %></main>
   </body>
