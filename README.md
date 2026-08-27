@@ -92,9 +92,36 @@ The processed ranking is recalculated from cached raw data. This avoids stale de
 
 ## Auth0 submission configuration
 
-Set `AUTH_ENABLED=true`, create an Auth0 **Regular Web Application**, then configure callback URL `http://localhost:3000/callback` and logout URL `http://localhost:3000`. Add Auth0 credentials to `.env`.
+The dashboard is protected by Auth0's authorization-code flow. This avoids relying on the implicit `form_post` flow on local HTTP development and keeps the application's client secret on the server only.
 
-In Auth0, disable public sign-ups, create the required `careers@fidenz.com` test user, and enable email MFA. Auth0 tenant configuration cannot safely be committed as code, so document the final tenant settings with screenshots or this checklist.
+1. In **Applications → My App → Settings**, configure:
+   - Allowed Callback URLs: `http://localhost:3000/callback`
+   - Allowed Logout URLs: `http://localhost:3000`
+   - Allowed Web Origins: `http://localhost:3000`
+2. Copy `.env.example` to `.env`, add the Auth0 Domain, Client ID, Client Secret, and a long random `AUTH0_SECRET`.
+3. Set `AUTH_ENABLED=true` and make `ALLOWED_EMAILS` contain only approved addresses. For the review account, use `careers@fidenz.com`.
+4. Start the app and open `http://localhost:3000`. An unauthenticated visitor is redirected to Auth0; an authenticated but unapproved email receives a 403 response.
+
+### Tenant controls required for submission
+
+These settings are account-specific and therefore cannot be committed as source code:
+
+1. **Create the review user** in **User Management → Users**:
+   - Email: `careers@fidenz.com`
+   - Password: `Pass#fidenz`
+2. **Disable public registration** in **Authentication → Database → [your database connection]** by enabling **Disable Sign Ups**. Keep the database connection enabled for **My App** in its Applications tab.
+3. **Enforce Auth0-side allowlisting**:
+   - Go to **Actions → Library → Build Custom** and create a **Post Login** Action.
+   - Paste `auth0-actions/allowlist-post-login.js`.
+   - Add the Action secret `ALLOWED_EMAILS` with `careers@fidenz.com` (and only any additional explicitly approved tester addresses).
+   - Deploy it and attach it to **Actions → Triggers → Post Login**.
+   - The app repeats the same email check after login as defence in depth.
+4. **Enable verification and MFA**:
+   - Under **Authentication → Database → [connection]**, enable email verification for the database user.
+   - Go to **Security → Multi-factor Auth**. Enable **OTP** as the independent factor, then enable **Email** as the dependent fallback factor; set policy to **Always** and save.
+   - Auth0 requires the independent factor because email alone is not considered a separate authentication factor. The verified email can then be used as the required email MFA fallback.
+
+Record screenshots of the enabled connection, Post Login Action binding, and MFA policy for your submission notes. Never commit `.env`, any Action secret, an Auth0 Client Secret, or the OpenWeatherMap key.
 
 ## Trade-offs and limitations
 

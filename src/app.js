@@ -5,10 +5,12 @@ import { auth } from 'express-openid-connect';
 import { fileURLToPath } from 'node:url';
 import { getRankings } from './services/weather.js';
 import { cacheStatus } from './services/cache.js';
+import { getAllowedEmails, isAllowedEmail } from './utils/access-control.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 const authEnabled = process.env.AUTH_ENABLED === 'true';
+const allowedEmails = getAllowedEmails(process.env.ALLOWED_EMAILS);
 
 app.set('view engine', 'ejs');
 app.set('views', fileURLToPath(new URL('../views/', import.meta.url)));
@@ -17,12 +19,32 @@ app.use(expressLayouts);
 app.use(express.static(fileURLToPath(new URL('../public/', import.meta.url))));
 
 if (authEnabled) {
-  app.use(auth({ authRequired: false, auth0Logout: true, secret: process.env.AUTH0_SECRET, baseURL: process.env.AUTH0_BASE_URL, clientID: process.env.AUTH0_CLIENT_ID, issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL }));
+  const requiredAuthSettings = ['AUTH0_SECRET', 'AUTH0_BASE_URL', 'AUTH0_CLIENT_ID', 'AUTH0_CLIENT_SECRET', 'AUTH0_ISSUER_BASE_URL'];
+  const missingSettings = requiredAuthSettings.filter((name) => !process.env[name]);
+  if (missingSettings.length || !allowedEmails.length) {
+    throw new Error(`Auth0 configuration is incomplete: ${[...missingSettings, !allowedEmails.length && 'ALLOWED_EMAILS'].filter(Boolean).join(', ')}`);
+  }
+  app.use(auth({
+    authRequired: false,
+    auth0Logout: true,
+    secret: process.env.AUTH0_SECRET,
+    baseURL: process.env.AUTH0_BASE_URL,
+    clientID: process.env.AUTH0_CLIENT_ID,
+    clientSecret: process.env.AUTH0_CLIENT_SECRET,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+    authorizationParams: { response_type: 'code', response_mode: 'query' }
+  }));
 }
 
 function requireUser(req, res, next) {
-  if (!authEnabled || req.oidc?.isAuthenticated()) return next();
-  return res.oidc.login({ returnTo: '/' });
+  if (!authEnabled) return next();
+  if (!req.oidc?.isAuthenticated()) return res.oidc.login({ returnTo: '/' });
+  if (isAllowedEmail(req.oidc.user?.email, allowedEmails)) return next();
+  return res.status(403).render('error', {
+    title: 'Access restricted',
+    message: 'Your account is authenticated but not approved for this dashboard.',
+    user: req.oidc.user
+  });
 }
 
 app.get('/', requireUser, (req, res) => res.render('dashboard', { title: 'Weather Comfort Atlas', user: req.oidc?.user }));
