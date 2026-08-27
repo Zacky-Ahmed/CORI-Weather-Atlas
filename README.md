@@ -113,6 +113,8 @@ Raw OpenWeatherMap responses are cached in memory for 300 seconds with `node-cac
 
 The processed ranking is recalculated from cached raw data. This avoids stale derived data while keeping API calls low. For a multi-instance production deployment, Redis would replace the in-memory cache.
 
+The ranking header surfaces a **Leading Signal** (the current top city and its CORI score) together with the most recent weather-station snapshot time. This makes the page feel like an observatory readout while distinguishing the station observation time from the five-minute cache window.
+
 ### Cache observability
 
 `GET /api/cache-status` is protected by the same Auth0 middleware as the dashboard. It reports the five-minute TTL, cache keys, and the last `HIT` or `MISS` observed for each city. This is deliberately a small debugging endpoint for the assignment; a production system would emit structured metrics rather than expose cache internals through an application route.

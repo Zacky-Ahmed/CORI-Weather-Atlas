@@ -47,6 +47,7 @@ function toInsight(data) {
     humidity,
     windSpeed,
     visibility,
+    observedAt: data.dt ? new Date(data.dt * 1000).toISOString() : new Date().toISOString(),
     comfortScore: cori.score,
     cori
   };
@@ -57,10 +58,10 @@ export async function getRankings() {
     if (process.env.DEMO_MODE !== 'false') {
       const rankings = demoCities.map(([city, description, temperatureC, humidity, windSpeed, visibility]) => {
         const cori = calculateComfortIndex({ temperatureC, humidity, windSpeed, visibility });
-        return { city, description, temperatureC, humidity, windSpeed, visibility, comfortScore: cori.score, cori };
+        return { city, description, temperatureC, humidity, windSpeed, visibility, observedAt: new Date().toISOString(), comfortScore: cori.score, cori };
       })
         .sort((a, b) => b.comfortScore - a.comfortScore).map((city, index) => ({ ...city, rank: index + 1, demo: true }));
-      return { rankings, unavailableCityIds: [] };
+      return { rankings, unavailableCityIds: [], observedAt: new Date().toISOString() };
     }
     throw new Error('OPENWEATHER_API_KEY is not configured. Copy .env.example to .env and add your key.');
   }
@@ -95,5 +96,6 @@ export async function getRankingsForCities(cityIds, weatherLoader) {
   const rankings = insights
     .sort((a, b) => b.comfortScore - a.comfortScore)
     .map((city, index) => ({ ...city, rank: index + 1 }));
-  return { rankings, unavailableCityIds };
+  const observedAt = new Date(Math.max(...insights.map((city) => new Date(city.observedAt).getTime()))).toISOString();
+  return { rankings, unavailableCityIds, observedAt };
 }
