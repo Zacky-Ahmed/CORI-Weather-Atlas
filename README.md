@@ -2,6 +2,21 @@
 
 A server-driven weather analytics dashboard built with Express, EJS and HTMX. It obtains current conditions from OpenWeatherMap, calculates a ranked Comfort Index on the backend, and replaces only the leaderboard when a user refreshes it.
 
+## Architecture
+
+![Weather Comfort Atlas architecture](docs/architecture.svg)
+
+The browser never receives an OpenWeatherMap key, an Auth0 client secret, or CORI formula inputs to calculate for itself. Express is the trust boundary: it authenticates the visitor, retrieves and caches raw weather server-side, computes CORI, and returns a rendered HTML fragment for HTMX to swap into the page.
+
+| Layer | Responsibility | Key implementation |
+| --- | --- | --- |
+| Identity boundary | Login, logout, verified-email/MFA policy, and tenant-side allowlisting | Auth0 Regular Web Application and Post Login Action |
+| Application boundary | Session check and a second allowlist check before every protected route | `src/app.js`, `src/utils/access-control.js` |
+| Weather acquisition | Parse supplied city IDs and fetch current conditions by city ID | `src/services/weather.js` |
+| Resilience layer | Keep each raw city response for five minutes and isolate individual upstream failures | `src/services/cache.js`, `Promise.allSettled` |
+| Decision engine | Calculate the 0–100 CORI score, caps, and explanation on the backend | `src/utils/comfort-index.js` |
+| Presentation | Render the ranking and let HTMX replace just that fragment | EJS views and HTMX |
+
 ## Setup
 
 1. Install Node.js 20+.
@@ -9,6 +24,14 @@ A server-driven weather analytics dashboard built with Express, EJS and HTMX. It
 3. Create an OpenWeatherMap API key and set `OPENWEATHER_API_KEY`.
 4. Run `npm install`, then `npm run dev`.
 5. Visit `http://localhost:3000`.
+
+Useful commands:
+
+```bash
+npm run dev   # start with file watching
+npm start     # production-style local start
+npm test      # run the unit suite
+```
 
 The supplied source file contained eight cities. This project extends it to ten with London and Singapore so it meets the assignment's minimum; the legacy `Temp` and `Status` fields are intentionally ignored because the live OpenWeatherMap response is authoritative. The parser accepts the supplied `List` key and the earlier `CityList` variant.
 
@@ -90,6 +113,10 @@ Raw OpenWeatherMap responses are cached in memory for 300 seconds with `node-cac
 
 The processed ranking is recalculated from cached raw data. This avoids stale derived data while keeping API calls low. For a multi-instance production deployment, Redis would replace the in-memory cache.
 
+### Cache observability
+
+`GET /api/cache-status` is protected by the same Auth0 middleware as the dashboard. It reports the five-minute TTL, cache keys, and the last `HIT` or `MISS` observed for each city. This is deliberately a small debugging endpoint for the assignment; a production system would emit structured metrics rather than expose cache internals through an application route.
+
 ## Auth0 submission configuration
 
 The dashboard is protected by Auth0's authorization-code flow. This avoids relying on the implicit `form_post` flow on local HTTP development and keeps the application's client secret on the server only.
@@ -123,6 +150,12 @@ These settings are account-specific and therefore cannot be committed as source 
 
 Record screenshots of the enabled connection, Post Login Action binding, and MFA policy for your submission notes. Never commit `.env`, any Action secret, an Auth0 Client Secret, or the OpenWeatherMap key.
 
+### Responsibility split
+
+- **Auth0 owns identity proof:** password handling, verification email, MFA challenge, session creation, and the tenant-side Post Login allowlist.
+- **This application owns resource authorization:** every dashboard, ranking-fragment, and cache-debug request repeats the approved-email check. This defence-in-depth check protects the application even if the tenant Action is changed later.
+- **The repository owns reproducibility:** the Action source and `.env.example` are versioned; real values only exist in Auth0 and the ignored local `.env` file.
+
 ## Trade-offs and limitations
 
 - HTMX keeps the client small and the server as the source of truth, but it is less appropriate than a SPA for complex client-side state.
@@ -133,6 +166,18 @@ Record screenshots of the enabled connection, Post Login Action binding, and MFA
 ## Tests
 
 Run `npm test` to test the CORI ideal case, dew-point interaction, hot/cold wind behavior, safety caps, score bounds, and isolated per-city API failures.
+
+### Manual acceptance checklist
+
+Before submission, verify these in a private/incognito browser session:
+
+1. An anonymous visit to `/` redirects to Auth0.
+2. An approved, verified account can complete the configured MFA challenge and sees the dashboard with its name/email in the header.
+3. `/logout` returns the visitor to the public login boundary.
+4. A real but unlisted Auth0 account is denied after login.
+5. The dashboard refresh button updates only the ranking fragment, and `/api/cache-status` shows `MISS` then `HIT` for city cache keys.
+
+The reviewer account is intentionally owned by Fidenz. During development, use a separately approved personal test account to complete the email verification and MFA flow; do not attempt to access the reviewer mailbox.
 
 ## Polished exploration bonuses
 

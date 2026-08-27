@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Weather Comfort Atlas architecture</title>
+  <desc id="desc">Auth0 authenticates an approved user. Express retrieves and caches OpenWeatherMap data, computes CORI, and sends an HTMX ranking fragment to the browser.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0f1711"/><stop offset="1" stop-color="#1b2b1d"/></linearGradient>
+    <linearGradient id="lime" x1="0" x2="1"><stop stop-color="#c4ff38"/><stop offset="1" stop-color="#86d934"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#8da591"/></marker>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".28"/></filter>
+    <style>
+      .title { fill:#f1f7ed; font:700 31px Arial, sans-serif; letter-spacing:-.8px }
+      .sub { fill:#a8b9aa; font:14px Arial, sans-serif }
+      .label { fill:#c4ff38; font:700 11px Arial, sans-serif; letter-spacing:1.5px }
+      .head { fill:#f3f7ee; font:700 17px Arial, sans-serif }
+      .copy { fill:#b9c6ba; font:13px Arial, sans-serif }
+      .tiny { fill:#839a86; font:11px Arial, sans-serif }
+      .card { fill:#1d2a1e; stroke:#3c5140; stroke-width:1.2 }
+      .data { fill:#152016; stroke:#6a864c; stroke-width:1.2 }
+      .security { fill:#1c2530; stroke:#7791a3; stroke-width:1.2 }
+      .engine { fill:#202c17; stroke:#c4ff38; stroke-width:1.6 }
+      .line { fill:none; stroke:#8da591; stroke-width:2; marker-end:url(#arrow) }
+      .dash { fill:none; stroke:#6c866f; stroke-width:1.5; stroke-dasharray:5 5; marker-end:url(#arrow) }
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <circle cx="1080" cy="72" r="165" fill="#c4ff38" opacity=".045"/>
+  <circle cx="80" cy="640" r="190" fill="#5bb1be" opacity=".05"/>
+  <text class="title" x="55" y="62">Weather Comfort Atlas</text>
+  <text class="sub" x="55" y="88">A server-owned decision path: authenticate → acquire → cache → explain → render</text>
+
+  <text class="label" x="55" y="145">INPUTS</text>
+  <rect class="data" filter="url(#shadow)" x="55" y="165" rx="12" width="220" height="112"/>
+  <text class="head" x="77" y="201">cities.json</text>
+  <text class="copy" x="77" y="226">CityCode list</text>
+  <text class="tiny" x="77" y="250">10+ current-weather lookups</text>
+
+  <rect class="data" filter="url(#shadow)" x="55" y="328" rx="12" width="220" height="128"/>
+  <text class="head" x="77" y="365">OpenWeatherMap</text>
+  <text class="copy" x="77" y="390">Current weather by city ID</text>
+  <text class="tiny" x="77" y="414">temperature · humidity · wind</text>
+  <text class="tiny" x="77" y="433">visibility · condition code</text>
+
+  <text class="label" x="361" y="145">EXPRESS TRUST BOUNDARY</text>
+  <rect class="card" filter="url(#shadow)" x="356" y="165" rx="12" width="242" height="112"/>
+  <text class="head" x="378" y="201">Weather service</text>
+  <text class="copy" x="378" y="226">Per-city request worker</text>
+  <text class="tiny" x="378" y="250">Promise.allSettled isolates failure</text>
+
+  <rect class="card" filter="url(#shadow)" x="356" y="328" rx="12" width="242" height="128"/>
+  <text class="head" x="378" y="365">Raw response cache</text>
+  <text class="copy" x="378" y="390">node-cache · key per city</text>
+  <text class="tiny" x="378" y="414">300-second TTL · HIT / MISS</text>
+  <text class="tiny" x="378" y="433">/api/cache-status</text>
+
+  <rect class="engine" filter="url(#shadow)" x="680" y="242" rx="12" width="250" height="171"/>
+  <text class="label" x="704" y="276">DECISION ENGINE</text>
+  <text class="head" x="704" y="309">CORI</text>
+  <text class="copy" x="704" y="334">Dew point + thermal strain</text>
+  <text class="copy" x="704" y="355">clarity + weather friction</text>
+  <text class="tiny" x="704" y="383">Geometric blend · safety caps</text>
+  <text class="tiny" x="704" y="400">Score + “Why this rank?”</text>
+
+  <text class="label" x="990" y="145">PRESENTATION</text>
+  <rect class="card" filter="url(#shadow)" x="970" y="165" rx="12" width="175" height="112"/>
+  <text class="head" x="992" y="201">EJS + HTMX</text>
+  <text class="copy" x="992" y="226">Ranking fragment</text>
+  <text class="tiny" x="992" y="250">Partial refresh only</text>
+  <rect class="card" filter="url(#shadow)" x="970" y="328" rx="12" width="175" height="128"/>
+  <text class="head" x="992" y="365">Explorer UI</text>
+  <text class="copy" x="992" y="390">Field Console lenses</text>
+  <text class="tiny" x="992" y="414">View-only sort · dark mode</text>
+
+  <text class="label" x="525" y="525">IDENTITY BOUNDARY</text>
+  <rect class="security" filter="url(#shadow)" x="430" y="545" rx="12" width="245" height="116"/>
+  <text class="head" x="452" y="582">Auth0</text>
+  <text class="copy" x="452" y="607">Authorization Code flow</text>
+  <text class="tiny" x="452" y="631">Email verification · MFA · Post Login allowlist</text>
+  <rect class="security" filter="url(#shadow)" x="745" y="545" rx="12" width="245" height="116"/>
+  <text class="head" x="767" y="582">Application authorization</text>
+  <text class="copy" x="767" y="607">Session + second email check</text>
+  <text class="tiny" x="767" y="631">Protects dashboard and debug route</text>
+
+  <path class="line" d="M275 221 H356"/>
+  <path class="line" d="M275 392 H356"/>
+  <path class="line" d="M598 221 H640 V300 H680"/>
+  <path class="line" d="M598 392 H640 V356 H680"/>
+  <path class="line" d="M930 327 H970"/>
+  <path class="line" d="M1057 277 V328"/>
+  <path class="dash" d="M552 545 V480 H805 V413"/>
+  <path class="dash" d="M675 603 H745"/>
+  <text class="tiny" x="570" y="507">identity before data access</text>
+  <text class="tiny" x="170" y="485">No API key leaves this boundary</text>
+</svg>
