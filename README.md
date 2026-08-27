@@ -2,7 +2,7 @@
 
 A server-driven weather analytics dashboard built with Express, EJS and HTMX. It obtains current conditions from OpenWeatherMap, calculates a ranked Comfort Index on the backend, and replaces only the leaderboard when a user refreshes it.
 
-> **In one sentence:** CORI Weather Atlas answers, “Which city is most practical for a normal 30-minute outdoor walk right now—and why?”
+> **In one sentence:** CORI Weather Atlas answers, “Which city is most practical for a normal 30-minute outdoor walk right now, and why?”
 
 ## Read this first: assignment requirements map
 
@@ -27,7 +27,7 @@ The browser never receives an OpenWeatherMap key, an Auth0 client secret, or COR
 | Application boundary | Session check and a second allowlist check before every protected route | `src/app.js`, `src/utils/access-control.js` |
 | Weather acquisition | Parse supplied city IDs and fetch current conditions by city ID | `src/services/weather.js` |
 | Resilience layer | Keep each raw city response for five minutes and isolate individual upstream failures | `src/services/cache.js`, `Promise.allSettled` |
-| Decision engine | Calculate the 0–100 CORI score, caps, and explanation on the backend | `src/utils/comfort-index.js` |
+| Decision engine | Calculate the CORI score from 0 to 100, plus caps and explanations, on the backend | `src/utils/comfort-index.js` |
 | Presentation | Render the ranking and let HTMX replace just that fragment | EJS views and HTMX |
 
 ## Setup
@@ -101,7 +101,7 @@ The model deliberately behaves differently by context:
 - Hot and humid air creates a larger penalty than hot dry air.
 - A moderate breeze can offset heat, but only up to a limit.
 - The same breeze makes cool weather less comfortable because it increases heat loss.
-- The broad comfortable effective-temperature band is 18–25°C, centred around 21.5°C.
+- The broad comfortable effective-temperature range is 18 to 25°C, centred around 21.5°C.
 
 ### Step 3: measure outdoor usability
 
@@ -109,7 +109,7 @@ CORI calculates three normalized dimensions from 0 to 1:
 
 | Dimension | Inputs | Reasoning |
 | --- | --- | --- |
-| Thermal comfort | Effective temperature | The broad 18–25°C zone scores strongly; a gentle curve still distinguishes similarly pleasant cities instead of producing artificial ties. |
+| Thermal comfort | Effective temperature | The broad 18 to 25°C zone scores strongly. A gentle curve still distinguishes similarly pleasant cities instead of producing artificial ties. |
 | Air clarity | Visibility | Uses a curved scale so improving visibility from 0.5 km to 3 km matters more than improving it from 9 km to 10 km. |
 | Weather friction | OpenWeather condition code | Clear weather scores highest; cloud, drizzle, rain, snow, haze/fog, and thunderstorms progressively reduce outdoor readiness. |
 
@@ -142,7 +142,7 @@ Even a good raw score is capped if conditions make outdoor plans meaningfully le
 | Effective temperature at least 38°C | 45 |
 | Effective temperature at most 0°C | 45 |
 
-The final score is rounded and constrained to 0–100. Each city card includes a backend-produced **“Why this rank”** statement so users can understand the main positive or negative conditions, rather than trusting a black-box number.
+The final score is rounded and constrained from 0 to 100. Each city card includes a backend-produced **“Why this rank”** statement so users can understand the main positive or negative conditions, rather than trusting a black-box number.
 
 ### Design boundaries and future extension
 
