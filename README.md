@@ -1,8 +1,8 @@
-# Weather Comfort Atlas
+# CORI Weather Atlas
 
 A server-driven weather analytics dashboard built with Express, EJS and HTMX. It obtains current conditions from OpenWeatherMap, calculates a ranked Comfort Index on the backend, and replaces only the leaderboard when a user refreshes it.
 
-> **In one sentence:** Weather Comfort Atlas answers, “Which city is most practical for a normal 30-minute outdoor walk right now—and why?”
+> **In one sentence:** CORI Weather Atlas answers, “Which city is most practical for a normal 30-minute outdoor walk right now—and why?”
 
 ## Read this first: assignment requirements map
 
@@ -17,7 +17,7 @@ A server-driven weather analytics dashboard built with Express, EJS and HTMX. It
 
 ## Architecture
 
-![Weather Comfort Atlas architecture](docs/architecture.svg)
+![CORI Weather Atlas architecture](docs/architecture.svg)
 
 The browser never receives an OpenWeatherMap key, an Auth0 client secret, or CORI formula inputs to calculate for itself. Express is the trust boundary: it authenticates the visitor, retrieves and caches raw weather server-side, computes CORI, and returns a rendered HTML fragment for HTMX to swap into the page.
 
