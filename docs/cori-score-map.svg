@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">CORI score decision map</title>
+  <desc id="desc">Temperature, humidity and wind form thermal comfort. Visibility forms air clarity. Weather condition forms weather friction. These combine geometrically, then safety caps create the final City Outdoor Readiness Index score.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#101711"/><stop offset="1" stop-color="#20311f"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#a4bda7"/></marker>
+    <style>
+      .title{fill:#f2f8ee;font:700 28px Arial,sans-serif}.sub{fill:#b9c9ba;font:15px Arial,sans-serif}.node{fill:#1d2b1e;stroke:#4d6650;stroke-width:1.4}.accent{fill:#253719;stroke:#c4ff38;stroke-width:1.8}.cap{fill:#3b2817;stroke:#ff966c;stroke-width:1.5}.head{fill:#f2f8ee;font:700 16px Arial,sans-serif}.copy{fill:#bfccbf;font:13px Arial,sans-serif}.tag{fill:#c4ff38;font:700 11px Arial,sans-serif;letter-spacing:1.3px}.arrow{fill:none;stroke:#a4bda7;stroke-width:2;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="520" fill="url(#background)"/>
+  <circle cx="1090" cy="44" r="135" fill="#c4ff38" opacity=".05"/>
+  <text class="title" x="48" y="56">CORI — how one city becomes one explainable score</text>
+  <text class="sub" x="48" y="82">Signals interact first; they are never simply added as disconnected points.</text>
+  <rect class="node" x="48" y="145" rx="12" width="220" height="126"/>
+  <text class="tag" x="70" y="177">FEEL</text><text class="head" x="70" y="207">Thermal comfort</text><text class="copy" x="70" y="232">temperature + humidity</text><text class="copy" x="70" y="252">+ context-sensitive wind</text>
+  <rect class="node" x="48" y="324" rx="12" width="220" height="112"/>
+  <text class="tag" x="70" y="356">SEE</text><text class="head" x="70" y="386">Air clarity</text><text class="copy" x="70" y="411">visibility for practical movement</text>
+  <rect class="node" x="320" y="234" rx="12" width="220" height="112"/>
+  <text class="tag" x="342" y="266">GO</text><text class="head" x="342" y="296">Weather friction</text><text class="copy" x="342" y="321">condition code: clear → storm</text>
+  <rect class="accent" x="620" y="185" rx="14" width="255" height="160"/>
+  <text class="tag" x="644" y="220">GEOMETRIC BLEND</text><text class="head" x="644" y="252">raw CORI</text><text class="copy" x="644" y="280">thermal⁰·⁶⁰ × clarity⁰·¹⁵</text><text class="copy" x="644" y="301">× weather friction⁰·²⁵</text><text class="copy" x="644" y="325">No good signal hides a bad one.</text>
+  <rect class="cap" x="930" y="145" rx="12" width="220" height="126"/>
+  <text class="tag" x="952" y="177" fill="#ffb48c">PROTECT</text><text class="head" x="952" y="207">Safety caps</text><text class="copy" x="952" y="232">storm ≤ 35 · fog ≤ 45</text><text class="copy" x="952" y="252">extreme heat/cold ≤ 45</text>
+  <rect class="accent" x="930" y="324" rx="12" width="220" height="112"/>
+  <text class="tag" x="952" y="356">OUTPUT</text><text class="head" x="952" y="386">CORI: 0–100</text><text class="copy" x="952" y="411">rank + “Why this rank?”</text>
+  <path class="arrow" d="M268 208H430V238"/><path class="arrow" d="M268 380H430V346"/><path class="arrow" d="M540 290H620"/><path class="arrow" d="M875 265H930"/><path class="arrow" d="M1040 271V324"/>
+</svg>

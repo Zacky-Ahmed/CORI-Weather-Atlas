@@ -2,6 +2,19 @@
 
 A server-driven weather analytics dashboard built with Express, EJS and HTMX. It obtains current conditions from OpenWeatherMap, calculates a ranked Comfort Index on the backend, and replaces only the leaderboard when a user refreshes it.
 
+> **In one sentence:** Weather Comfort Atlas answers, “Which city is most practical for a normal 30-minute outdoor walk right now—and why?”
+
+## Read this first: assignment requirements map
+
+| Requirement | Where to find it |
+| --- | --- |
+| Setup instructions | [Setup](#setup) |
+| Comfort Index formula | [CORI visual map](#cori-city-outdoor-readiness-index) and formula sections below |
+| Why the weights are chosen | [Why these influences](#why-these-influences) |
+| Cache design | [Cache design](#cache-design) |
+| Trade-offs | [Trade-offs](#trade-offs) |
+| Known limitations | [Known limitations](#known-limitations) |
+
 ## Architecture
 
 ![Weather Comfort Atlas architecture](docs/architecture.svg)
@@ -33,6 +46,13 @@ npm start     # production-style local start
 npm test      # run the unit suite
 ```
 
+### Three-minute reviewer route
+
+1. Sign in through Auth0 with an approved, verified account.
+2. Read the first ranked city’s **CORI score** and **Why this rank?** note.
+3. Click **Recalculate field notes**. Only the leaderboard is refreshed; the server reuses each city’s five-minute cache where possible.
+4. Use the Field Console to explore a different view. It never changes the required default CORI ranking.
+
 The supplied source file contained eight cities. This project extends it to ten with London and Singapore so it meets the assignment's minimum; the legacy `Temp` and `Status` fields are intentionally ignored because the live OpenWeatherMap response is authoritative. The parser accepts the supplied `List` key and the earlier `CityList` variant.
 
 ## CORI: City Outdoor Readiness Index
@@ -40,6 +60,17 @@ The supplied source file contained eight cities. This project extends it to ten 
 CORI answers one practical question: **“How pleasant and usable is a normal 30-minute outdoor walk in this city right now?”** It is calculated only on the backend in `src/utils/comfort-index.js`; the browser only receives the result and explanation.
 
 CORI is deliberately not a generic weighted average. Temperature, humidity, and wind affect one another in the real world, so the model treats them as an interaction before it considers air clarity and weather disruption.
+
+![CORI decision map](docs/cori-score-map.svg)
+
+### CORI in plain English
+
+1. **Feel:** work out how the air feels after humidity and wind interact with the temperature.
+2. **See:** check whether visibility makes outdoor movement practical.
+3. **Go:** check whether rain, fog, snow, or storms disrupt the plan.
+4. **Protect:** apply a safety ceiling when a storm, extreme thermal strain, or very low visibility is present.
+
+No single pleasant signal can hide a serious bad signal. For example, a mild temperature cannot turn an active thunderstorm into a high score.
 
 ### Step 1: derive dew point
 
@@ -90,6 +121,16 @@ rawCORI = 100 × thermalScore^0.60 × clarityScore^0.15 × conditionScore^0.25
 
 This geometric blend is the key design decision. It prevents excellent temperature from fully compensating for low visibility, rain, or a storm. Thermal comfort gets the largest exponent because it drives most outdoor physical comfort; condition friction gets a strong secondary role because it determines whether a walk is realistically enjoyable; visibility contributes practical orientation and safety.
 
+### Why these influences
+
+The exponents are **relative influence**, not points added to a score. A geometric blend makes weak conditions visibly matter.
+
+| Dimension | Influence | Why it has this influence |
+| --- | ---: | --- |
+| Thermal comfort | `0.60` | A walk is primarily experienced through heat, cold, humidity, and wind; this deserves the strongest influence. |
+| Weather friction | `0.25` | Rain, fog, snow, and storms can make a walk impractical even when the temperature is pleasant. |
+| Air clarity | `0.15` | Visibility affects orientation, enjoyment, and safety, but should not outweigh serious thermal or weather disruption by itself. |
+
 ### Step 5: apply safety caps
 
 Even a good raw score is capped if conditions make outdoor plans meaningfully less safe:
@@ -108,6 +149,16 @@ The final score is rounded and constrained to 0–100. Each city card includes a
 CORI is an explainable outdoor-readiness metric, not a medical heat-stress index and not a recreation of UTCI. Professional thermal-comfort models also use solar radiation and mean radiant temperature, which are not available from this OpenWeatherMap current-weather endpoint. The planned live-demo extension is **Sky Moderation**: using cloudiness as a modest shade proxy, while clearly documenting that it is not direct radiation measurement.
 
 ## Cache design
+
+```mermaid
+flowchart LR
+  A[City code] --> B{Raw city cache\n5 minutes}
+  B -- HIT --> D[CORI engine]
+  B -- MISS --> C[OpenWeatherMap]
+  C --> B
+  D --> E[Ranked insight + Why this rank]
+  E --> F[HTMX leaderboard fragment]
+```
 
 Raw OpenWeatherMap responses are cached in memory for 300 seconds with `node-cache`. The cache is keyed by city ID, so one unavailable city does not invalidate the rest. Weather requests are settled independently: a timeout or bad response for one city leaves the available cities ranked and shows an honest in-page notice. Only if every request fails does the dashboard return a retryable error. `GET /api/cache-status` reports cache keys and the most recent `HIT` or `MISS` for each key.
 
@@ -158,12 +209,19 @@ Record screenshots of the enabled connection, Post Login Action binding, and MFA
 - **This application owns resource authorization:** every dashboard, ranking-fragment, and cache-debug request requires both an approved email and Auth0's `email_verified` claim. This defence-in-depth check protects the application even if the tenant Action is changed later.
 - **The repository owns reproducibility:** the Action source and `.env.example` are versioned; real values only exist in Auth0 and the ignored local `.env` file.
 
-## Trade-offs and limitations
+## Trade-offs
 
 - HTMX keeps the client small and the server as the source of truth, but it is less appropriate than a SPA for complex client-side state.
-- The free weather API is subject to rate limits and may have delayed activation after key creation.
-- Visibility may be absent for some stations. CORI does not invent a visibility measurement; an absent value is treated as low-confidence clarity and is visible in the underlying weather response.
 - In-memory cache is ideal for this evaluation but is not shared across server instances.
+- CORI favours explainability over pretending to be a medical or scientific heat-stress standard. The formula is simple enough to explain and safely change live during the recording.
+
+## Known limitations
+
+- The free OpenWeatherMap plan can be rate-limited and its key may take time to activate.
+- Visibility can be absent at a weather station. CORI does not invent a measurement; missing visibility is handled conservatively.
+- Solar radiation and mean radiant temperature are unavailable from this current-weather endpoint, so CORI is **not** UTCI and not a medical heat-stress measure.
+- The in-memory cache is reset when the server restarts and is not shared between multiple servers. Redis would be the production replacement.
+- Current conditions are a snapshot, not a forecast. A good score does not promise that the next hour will remain comfortable.
 
 ## Tests
 
